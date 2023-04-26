@@ -5,68 +5,55 @@ class PatientList {
     // Tu código aquí 👈🏻
     this.head = null;
     this.tail = null;
-    this.beds = beds; // = total beds available
-    this.currentFreeBed = 1;
-  }
-
-  searchFreeBed() {
-    if (this.beds === 0) throw Error("No free beds found");
-    if (this.currentFreeBed === 1) return this.currentFreeBed;
-
-    let currentPatient = this.head;
-    while (currentPatient) {
-      // If there is no name return bedNumber
-      if (!currentPatient.name && !currentPatient.age) {
-        this.currentFreeBed = currentPatient.bedNumber;
-        return this.currentFreeBed;
-      }
-
-      currentPatient = currentPatient.next;
-    }
+    this.length = 0;
+    this.beds = Array(beds).fill(true);
   }
 
   addPatient(name, age) {
     // Tu código aquí 👈🏻
+    if (this.length === this.beds.length) return "No free beds";
+
+    const freeBed = this.beds.findIndex((bed) => bed);
+    this.beds[freeBed] = false;
+
     const newPatient = new Patient(name, age);
+    newPatient.bedNumber = freeBed + 1;
 
-    newPatient.bedNumber = this.searchFreeBed();
-
-    // If the list if empty we add a new patient and reduce
-    // the beds available while increasing the length of the list.
     if (!this.head) {
       this.head = newPatient;
       this.tail = newPatient;
-      this.beds--;
-      this.currentFreeBed++;
-      return;
+    } else {
+      this.tail.next = newPatient;
+      this.tail = newPatient;
     }
-
-    // If there were any patient added before, assign that bed first
+    this.length++;
   }
 
   removePatient(name) {
     // Tu código aquí 👈🏻
     if (!this.head) return null;
 
-    let currentPatient = this.head;
-    let prevPatient = null;
-
-    while (currentPatient) {
-      if (currentPatient.name === name) {
-        if (currentPatient === this.head) {
+    let current = this.head;
+    let prev = null;
+    while (current) {
+      if (name === current.name) {
+        if (current === this.head) {
+          this.beds[current.bedNumber - 1] = true;
           this.head = this.head.next;
-          this.beds++;
-        } else if (currentPatient === this.tail) {
-          this.tail = prevPatient;
-          prevPatient.next = null;
-          this.beds++;
+        } else if (current === this.tail) {
+          this.beds[current.bedNumber - 1] = true;
+          this.tail = prev;
+          prev.next = null;
         } else {
-          prevPatient.next = currentPatient.next;
+          prev.next = current.next;
         }
+        this.length--;
+        return current;
       }
-      // Move to next patient
-      currentPatient = currentPatient.next;
+      prev = current;
+      current = current.next;
     }
+    return null;
   }
 
   getPatient(name) {
@@ -103,23 +90,21 @@ class PatientList {
     // Tu código aquí 👈🏻
     let array = [];
     let currentPatient = this.head;
-    let i = 0;
     while (currentPatient) {
       const patientData = {
         name: currentPatient.name,
         age: currentPatient.age,
         bedNumber: currentPatient.bedNumber,
       };
-      array[i] = patientData;
+      array.push(patientData);
       currentPatient = currentPatient.next;
-      i++;
     }
     return array;
   }
 
   getAvailableBeds() {
     // Tu código aquí 👈🏻
-    return `Beds available: ${this.beds}`;
+    return `Beds available: ${this.length - this.beds.length}`;
   }
 }
 
@@ -136,5 +121,8 @@ console.log(list.getPatient("Paciente 2"));
 console.log(list.getAvailableBeds());
 
 list.removePatient("Paciente 1");
+console.log(list.getPatientList());
+
+list.addPatient("Paciente 4", 50);
 console.log(list.getPatientList());
 console.log(list.getAvailableBeds());
