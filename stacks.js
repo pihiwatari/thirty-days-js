@@ -61,6 +61,7 @@ class Stack {
   // }
 
   // Refactored pop method
+
   pop() {
     if (this.length === 0) return null;
 
